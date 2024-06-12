@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<ItemGroup>
+  <PackageReference Include="Figgle" Version="0.5.1" />
+  <PackageReference Include="Inquirer" Version="0.0.6" />
+</ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
