@@ -1,7 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System;
 using Figgle;
-using InquirerCore;
 
 
 class Program
@@ -9,8 +8,14 @@ class Program
     static void Main(string[] args)
     {
         MainMenu mainMenu = new MainMenu();
-        Console.WriteLine(FiggleFonts.Slant.Render("Hello, World!"));
-        mainMenu.ShowOptions();
+        mainMenu.quitFlag = false;
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(FiggleFonts.Slant.Render("Projects - CLI"));
+        Console.ResetColor();
+       while(!mainMenu.quitFlag)
+       {
+           mainMenu.ShowOptions();
+       }
     }
 }
 
