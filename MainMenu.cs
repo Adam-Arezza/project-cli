@@ -116,13 +116,7 @@ class MainMenu
     public void RemoveProject()
     {
         Console.WriteLine("removing project");
-
         var projects = GetProjectsListFromFile();
-        //string[] projectArray = projects.Select(x => x.projectName).ToArray();
-        //var projectSelectList = new InquirerCore.Prompts.ListInput("projectList", "Select project to remove: ", projectArray);
-        //var selectProject = new Inquirer(projectSelectList);
-        //selectProject.Ask();
-        //var projectToRemoveIdx = int.Parse(projectSelectList.Answer()) - 1;
         int projectToRemoveIdx = GetProjectIndex(projects);
         projects.RemoveAt(projectToRemoveIdx);
         string projectsJson = JsonSerializer.Serialize(projects);
@@ -153,7 +147,7 @@ class MainMenu
             UnixProjectLoader projectLoader = new UnixProjectLoader();
             projectLoader.LoadProject(projectPath);
         }
-        Console.WriteLine("opening project...");//opens a project
+        Console.WriteLine("opening project...");
     }
 
 
@@ -167,10 +161,12 @@ class MainMenu
     private int GetProjectIndex(List<Project> projects)
     {
         string[] projectArray = projects.Select(x => x.projectName).ToArray();
+        Console.ForegroundColor = ConsoleColor.Yellow;
         var projectSelectList = new InquirerCore.Prompts.ListInput("projectList", "Select project to remove: ", projectArray);
         var selectProject = new Inquirer(projectSelectList);
         selectProject.Ask();
         int projectIndex = int.Parse(projectSelectList.Answer()) - 1;
+        Console.ResetColor();
         return projectIndex;
     }
 
