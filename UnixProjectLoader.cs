@@ -1,6 +1,6 @@
 class UnixProjectLoader: IProjectLoader
 {
-    public void LoadProject()
+    public void LoadProject(string projectPath)
     {
 
     }

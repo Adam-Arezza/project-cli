@@ -1,4 +1,4 @@
 interface IProjectLoader
 {
-    public void LoadProject(){}
+    public void LoadProject(string projectPath);
 }

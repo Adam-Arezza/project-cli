@@ -3,12 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 
 class MainMenu
 {
     private Dictionary<string,Action> options;
     private string projectDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\projects";
+    private string projectJsonFile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\projects\\projects.json";
     public bool quitFlag
     {get;set;}
 
@@ -30,20 +33,19 @@ class MainMenu
         List<string> optionNames = new List<string>(options.Keys);
         string[] optionsArray = optionNames.ToArray();
         var optionsList = new InquirerCore.Prompts.ListInput("option", 
-                                                         "Select an option, if this is the first time running, select setup.", 
+                                                         "", 
                                                          optionsArray);
         var inquiries = new Inquirer(optionsList);
         Console.ForegroundColor = ConsoleColor.Cyan;
         inquiries.Ask();
         int selection = int.Parse(optionsList.Answer()) - 1;
+        Console.ResetColor();
         Console.WriteLine(optionsArray[selection]);
         options[optionsArray[selection]].Invoke();
-        Console.ResetColor();
     }
 
     public void Setup()
-    {
-        //setup
+  {
        Console.WriteLine("running setup...");
        bool dirExists = Directory.Exists(this.projectDirectory);
        if(!dirExists)
@@ -63,7 +65,7 @@ class MainMenu
            if(overWriteOptions[selection] == "yes")
            {
                Console.WriteLine("Removing the old project directory...");
-               Directory.Delete(this.projectDirectory);
+               Directory.Delete(this.projectDirectory, true);
                Directory.CreateDirectory(this.projectDirectory);
            }
            else
@@ -76,7 +78,7 @@ class MainMenu
 
     public void AddProject()
     {   
-        Console.WriteLine("adding new project");//add a project to the list
+        Console.WriteLine("adding new project");
         string projName;
         string projPath;
         var projectNameInput = new InquirerCore.Prompts.Input("projectName", "Enter the name of the Project: ");
@@ -85,53 +87,93 @@ class MainMenu
         projectInputPrompts.Ask();
         projName = projectNameInput.Answer();
         projPath = projectPathInput.Answer();
+
+        //validate project path
+         
         Console.WriteLine("The name is: {0}", projName);
         Console.WriteLine("The path is: {0}", projPath);
-        string projectsJsonFile = this.projectDirectory + "\\projects.json";
         Project newProject = new Project(projName, projPath);
-
-        if(!File.Exists(projectsJsonFile))
+        if(!File.Exists(this.projectJsonFile))
         {
             List<Project> projects = new List<Project>();
             projects.Add(newProject);
             string projectsJson = JsonSerializer.Serialize(projects);
-            File.WriteAllText(projectsJsonFile, projectsJson);
+            File.WriteAllText(this.projectJsonFile, projectsJson);
             return;
         }
 
         else
         {
-            string projectJson = File.ReadAllText(projectsJsonFile);
-            Console.WriteLine(projectJson);
-            List<Project>? projects = JsonSerializer.Deserialize<List<Project>>(projectJson);
-            if(projects?.Count > 0)
-            {
-                projects.Add(newProject);
-            }
+            var projects = GetProjectsListFromFile();
+            projects.Add(newProject);
             Console.WriteLine(projects);
             string projectsJson = JsonSerializer.Serialize(projects);
-            File.WriteAllText(projectsJsonFile, projectsJson);
+            File.WriteAllText(this.projectJsonFile, projectsJson);
             return;
         }
     }
 
     public void RemoveProject()
     {
-        Console.WriteLine("removing project");//remove a project from the list
+        Console.WriteLine("removing project");
+
+        var projects = GetProjectsListFromFile();
+        //string[] projectArray = projects.Select(x => x.projectName).ToArray();
+        //var projectSelectList = new InquirerCore.Prompts.ListInput("projectList", "Select project to remove: ", projectArray);
+        //var selectProject = new Inquirer(projectSelectList);
+        //selectProject.Ask();
+        //var projectToRemoveIdx = int.Parse(projectSelectList.Answer()) - 1;
+        int projectToRemoveIdx = GetProjectIndex(projects);
+        projects.RemoveAt(projectToRemoveIdx);
+        string projectsJson = JsonSerializer.Serialize(projects);
+        File.WriteAllText(this.projectJsonFile, projectsJson);
     }
 
     public void ListProjects()
     {
-        string projectsJsonFile = this.projectDirectory + "\\projects.json";
-        Console.WriteLine("listing projects...");// print out all the projects
-        string projectJson = File.ReadAllText(projectsJsonFile);
-        Console.WriteLine(projectJson);
+        var projects = GetProjectsListFromFile();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        projects.ForEach(p => Console.WriteLine(p.projectName));
+        Console.ResetColor();
     }
 
     public void OpenProject()
-    {
+    {   
+        var projects = GetProjectsListFromFile();
+        int projectToOpenIdx = GetProjectIndex(projects);
+        string projectPath = projects[projectToOpenIdx].projectPath;
+
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            WindowsProjectLoader projectLoader = new WindowsProjectLoader();
+            projectLoader.LoadProject(projectPath);
+        }
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            UnixProjectLoader projectLoader = new UnixProjectLoader();
+            projectLoader.LoadProject(projectPath);
+        }
         Console.WriteLine("opening project...");//opens a project
     }
+
+
+    private List<Project> GetProjectsListFromFile()
+    {
+        string projectJson = File.ReadAllText(this.projectJsonFile);
+        List<Project> projects = JsonSerializer.Deserialize<List<Project>>(projectJson)?? throw new Exception("Could not read JSON file or it's contents.");
+        return projects;
+    }
+
+    private int GetProjectIndex(List<Project> projects)
+    {
+        string[] projectArray = projects.Select(x => x.projectName).ToArray();
+        var projectSelectList = new InquirerCore.Prompts.ListInput("projectList", "Select project to remove: ", projectArray);
+        var selectProject = new Inquirer(projectSelectList);
+        selectProject.Ask();
+        int projectIndex = int.Parse(projectSelectList.Answer()) - 1;
+        return projectIndex;
+    }
+
     public void setQuit()
     {
         quitFlag = true;
