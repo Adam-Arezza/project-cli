@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 
-public class WindowsProjectLoader:IProjectLoader,IPythonProjectCheck
+class LinuxProjectLoader: IProjectLoader, IPythonProjectCheck
 {
     public void LoadProject(string projectPath)
     {
@@ -15,18 +15,22 @@ public class WindowsProjectLoader:IProjectLoader,IPythonProjectCheck
             return;
         }
 
-        string command = $"cd {projectPath}; nvim .";
+        string command = $"-- bash -c 'nvim .;exec bash'";
         if(IsPythonProject(projectPath))
         {
             string activateScript = GetPythonActivateScript(projectPath);
-            command = $"cd {projectPath}; {activateScript}; nvim .";
+            command = $"";
             //command += $"; {activateScript}";
         }
 
+        //ubuntu 
+        //gnome-terminal --working-directory={projectPath} -- bash -c "nvim .; exec bash"
+        //gnome-terminal --working-directory={projectPath} -- bash -c "source {env script};nvim .; exec bash"
+
         ProcessStartInfo startInfo = new ProcessStartInfo
         {
-            FileName = "powershell.exe",
-            Arguments = $"-NoExit -Command \"{command}\"",
+            FileName = "gnome-terminal",
+            Arguments = $"--working-directory={projectPath}\"{command}\"",
             UseShellExecute = false,
             CreateNoWindow = false
         };
@@ -37,6 +41,7 @@ public class WindowsProjectLoader:IProjectLoader,IPythonProjectCheck
             process.Start();
             Environment.Exit(0);
         }
+
     }
 
     public bool IsPythonProject(string projPath)
@@ -69,10 +74,10 @@ public class WindowsProjectLoader:IProjectLoader,IPythonProjectCheck
         {
             foreach(string innerDir in Directory.GetDirectories(directory))
             {
-                if(innerDir == directory + "\\Scripts")
+                if(innerDir == directory + "/bin")
                 {
                     string virtualEnvDir = Path.GetFileName(directory);
-                    activateScript = ".\\"+ virtualEnvDir + "\\Scripts\\activate";         
+                    activateScript = virtualEnvDir + "/bin/activate";         
                     break;
                 }
             }

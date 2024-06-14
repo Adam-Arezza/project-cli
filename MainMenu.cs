@@ -78,7 +78,9 @@ class MainMenu
 
     public void AddProject()
     {   
-        Console.WriteLine("adding new project");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Adding a new project");
+        Console.ResetColor();
         string projName;
         string projPath;
         var projectNameInput = new InquirerCore.Prompts.Input("projectName", "Enter the name of the Project: ");
@@ -115,7 +117,9 @@ class MainMenu
 
     public void RemoveProject()
     {
-        Console.WriteLine("removing project");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Removing project");
+        Console.ResetColor();
         var projects = GetProjectsListFromFile();
         int projectToRemoveIdx = GetProjectIndex(projects);
         projects.RemoveAt(projectToRemoveIdx);
@@ -125,6 +129,9 @@ class MainMenu
 
     public void ListProjects()
     {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Project List: ");
+        Console.ResetColor();
         var projects = GetProjectsListFromFile();
         Console.ForegroundColor = ConsoleColor.Yellow;
         projects.ForEach(p => Console.WriteLine(p.projectName));
@@ -133,6 +140,9 @@ class MainMenu
 
     public void OpenProject()
     {   
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Select project to open: ");
+        Console.ResetColor();
         var projects = GetProjectsListFromFile();
         int projectToOpenIdx = GetProjectIndex(projects);
         string projectPath = projects[projectToOpenIdx].projectPath;
@@ -144,7 +154,7 @@ class MainMenu
         }
         if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            UnixProjectLoader projectLoader = new UnixProjectLoader();
+            LinuxProjectLoader projectLoader = new LinuxProjectLoader();
             projectLoader.LoadProject(projectPath);
         }
         Console.WriteLine("opening project...");
@@ -162,7 +172,7 @@ class MainMenu
     {
         string[] projectArray = projects.Select(x => x.projectName).ToArray();
         Console.ForegroundColor = ConsoleColor.Yellow;
-        var projectSelectList = new InquirerCore.Prompts.ListInput("projectList", "Select project to remove: ", projectArray);
+        var projectSelectList = new InquirerCore.Prompts.ListInput("projectList", "", projectArray);
         var selectProject = new Inquirer(projectSelectList);
         selectProject.Ask();
         int projectIndex = int.Parse(projectSelectList.Answer()) - 1;
