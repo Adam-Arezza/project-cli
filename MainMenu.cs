@@ -19,12 +19,12 @@ class MainMenu
     {
        options = new Dictionary<string, Action>
        {
-           {"setup", this.Setup},
-           {"add project", this.AddProject},
-           {"remove project", this.RemoveProject},
-           {"list projects", this.ListProjects},
-           {"open project", this.OpenProject},
-           {"quit", this.setQuit}
+           {"setup", Setup},
+           {"add project", AddProject},
+           {"remove project", RemoveProject},
+           {"list projects", ListProjects},
+           {"open project", OpenProject},
+           {"quit", setQuit}
        }; 
     }
 
@@ -47,11 +47,11 @@ class MainMenu
     public void Setup()
   {
        Console.WriteLine("running setup...");
-       bool dirExists = Directory.Exists(this.projectDirectory);
+       bool dirExists = Directory.Exists(projectDirectory);
        if(!dirExists)
        {
            Console.WriteLine("no project directory exists, one will be created...");
-           Directory.CreateDirectory(this.projectDirectory);
+           Directory.CreateDirectory(projectDirectory);
        }
        else
        {
@@ -65,8 +65,8 @@ class MainMenu
            if(overWriteOptions[selection] == "yes")
            {
                Console.WriteLine("Removing the old project directory...");
-               Directory.Delete(this.projectDirectory, true);
-               Directory.CreateDirectory(this.projectDirectory);
+               Directory.Delete(projectDirectory, true);
+               Directory.CreateDirectory(projectDirectory);
            }
            else
            {
@@ -95,12 +95,12 @@ class MainMenu
         Console.WriteLine("The name is: {0}", projName);
         Console.WriteLine("The path is: {0}", projPath);
         Project newProject = new Project(projName, projPath);
-        if(!File.Exists(this.projectJsonFile))
+        if(!File.Exists(projectJsonFile))
         {
             List<Project> projects = new List<Project>();
             projects.Add(newProject);
             string projectsJson = JsonSerializer.Serialize(projects);
-            File.WriteAllText(this.projectJsonFile, projectsJson);
+            File.WriteAllText(projectJsonFile, projectsJson);
             return;
         }
 
@@ -110,7 +110,7 @@ class MainMenu
             projects.Add(newProject);
             Console.WriteLine(projects);
             string projectsJson = JsonSerializer.Serialize(projects);
-            File.WriteAllText(this.projectJsonFile, projectsJson);
+            File.WriteAllText(projectJsonFile, projectsJson);
             return;
         }
     }
@@ -124,7 +124,7 @@ class MainMenu
         int projectToRemoveIdx = GetProjectIndex(projects);
         projects.RemoveAt(projectToRemoveIdx);
         string projectsJson = JsonSerializer.Serialize(projects);
-        File.WriteAllText(this.projectJsonFile, projectsJson);
+        File.WriteAllText(projectJsonFile, projectsJson);
     }
 
     public void ListProjects()
@@ -163,7 +163,7 @@ class MainMenu
 
     private List<Project> GetProjectsListFromFile()
     {
-        string projectJson = File.ReadAllText(this.projectJsonFile);
+        string projectJson = File.ReadAllText(projectJsonFile);
         List<Project> projects = JsonSerializer.Deserialize<List<Project>>(projectJson)?? throw new Exception("Could not read JSON file or it's contents.");
         return projects;
     }

@@ -1,4 +1,4 @@
-public class Project
+class Project
 {
     public string projectName {get; set;}
 

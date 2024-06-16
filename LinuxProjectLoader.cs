@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 
-class LinuxProjectLoader: IProjectLoader, IPythonProjectCheck
+class LinuxProjectLoader: IProjectLoader 
 {
     public void LoadProject(string projectPath)
     {
